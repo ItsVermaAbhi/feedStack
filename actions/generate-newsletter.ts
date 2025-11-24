@@ -1,6 +1,6 @@
 "use server";
 
-import { openai } from "@ai-sdk/openai";
+import { google } from '@ai-sdk/google';
 import { streamObject } from "ai";
 import { z } from "zod";
 import { checkIsProUser, getCurrentUser } from "@/lib/auth/helpers";
@@ -73,7 +73,7 @@ export async function generateNewsletterStream(params: {
 
   // Generate newsletter using AI with streaming for real-time updates
   const { partialObjectStream } = await streamObject({
-    model: openai("gpt-4o"),
+    model: google('gemini-2.5-pro'),
     schema: NewsletterSchema,
     prompt,
   });

@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { streamObject } from "ai";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
@@ -33,6 +33,18 @@ const NewsletterSchema = z.object({
  */
 export async function POST(req: NextRequest) {
   try {
+    // Check for Google API key
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      console.error("GOOGLE_GENERATIVE_AI_API_KEY is not set");
+      return Response.json(
+        {
+          error:
+            "Google API key not configured. Please set GOOGLE_GENERATIVE_AI_API_KEY in your environment variables.",
+        },
+        { status: 500 },
+      );
+    }
+
     const body = await req.json();
     const { feedIds, startDate, endDate, userInput } = body;
 
@@ -62,6 +74,16 @@ export async function POST(req: NextRequest) {
       endDate: new Date(endDate),
     });
 
+    if (articles.length === 0) {
+      return Response.json(
+        {
+          error:
+            "No articles found for the selected date range. Please try a different date range or ensure your feeds have articles.",
+        },
+        { status: 400 },
+      );
+    }
+
     // Build the AI prompt
     const articleSummaries = buildArticleSummaries(articles);
     const prompt = buildNewsletterPrompt({
@@ -75,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     // Stream newsletter generation with AI SDK
     const result = streamObject({
-      model: openai("gpt-4o"),
+      model: google("gemini-2.5-pro"),
       schema: NewsletterSchema,
       prompt,
       onFinish: async () => {
@@ -88,8 +110,22 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error in generate-stream:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    // Provide more detailed error information
+    let errorMessage = "Unknown error";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // Check for common API errors
+      if (error.message.includes("API key")) {
+        errorMessage =
+          "Invalid Google API key. Please check your GOOGLE_GENERATIVE_AI_API_KEY environment variable.";
+      } else if (error.message.includes("model")) {
+        errorMessage =
+          "Invalid model name or model not available. Please check the Gemini model name.";
+      } else if (error.message.includes("rate limit") || error.message.includes("quota")) {
+        errorMessage =
+          "API rate limit exceeded. Please try again later or check your Google AI Studio quota.";
+      }
+    }
 
     return Response.json(
       { error: `Failed to generate newsletter: ${errorMessage}` },

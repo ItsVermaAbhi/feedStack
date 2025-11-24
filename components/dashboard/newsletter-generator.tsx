@@ -11,7 +11,21 @@ import { NewsletterForm } from "./newsletter-form";
 
 export async function NewsletterGenerator() {
   const { userId } = await auth();
-  const user = await upsertUserFromClerk(userId!);
+  
+  if (!userId) {
+    return (
+      <Card className="transition-all hover:shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl">Authentication Required</CardTitle>
+          <CardDescription className="text-base">
+            Please sign in to generate newsletters.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const user = await upsertUserFromClerk(userId);
   const feeds = await getRssFeedsByUserId(user.id);
 
   if (feeds.length === 0) {

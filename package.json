@@ -14,7 +14,7 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.57",
+    "@ai-sdk/google": "^2.0.43",
     "@ai-sdk/react": "^1.2.12",
     "@clerk/nextjs": "6.34.0",
     "@prisma/client": "^6.18.0",
