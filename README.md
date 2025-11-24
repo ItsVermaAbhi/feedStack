@@ -1,4 +1,4 @@
-# AI Newsletter Generator — Built with Next.js 16, OpenAI, MongoDB, Prisma & Clerk
+# AI Newsletter Generator — Built with Next.js 16, Google Gemini, MongoDB, Prisma & Clerk
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -30,9 +30,9 @@ Create a Clerk account at [Clerk](https://go.clerk.com/sonny) for authentication
 
 Create a free MongoDB Atlas account at [MongoDB Atlas](https://fandf.co/48QTwh2) for your database
 
-### 3) Set up OpenAI
+### 3) Set up Google Gemini
 
-Create an OpenAI account at [OpenAI](https://openai.com) to power your AI newsletter generation
+Create a Google AI Studio account at [Google AI Studio](https://aistudio.google.com) to power your AI newsletter generation with Gemini
 
 ## What Is This App?
 
@@ -179,7 +179,7 @@ The AI SDK's `streamObject` and `useObject` hooks make streaming incredibly simp
 - **Tailwind CSS v4** for modern styling
 - **Clerk** for authentication, billing, and user management
 - **MongoDB + Prisma** for database with type-safe queries
-- **OpenAI GPT-4o** (customizable) for intelligent newsletter generation
+- **Google Gemini 2.5 Pro** (customizable) for intelligent newsletter generation
 - **Vercel AI SDK** for seamless streaming AI responses
   - `streamObject` on the server for type-safe streaming
   - `useObject` hook on the client for real-time updates
@@ -205,7 +205,7 @@ graph TB
     DB --> Articles
     
     Articles --> Prompt[Newsletter Prompt]
-    Prompt --> AI[OpenAI GPT]
+    Prompt --> AI[Google Gemini]
     
     AI --> Stream[Real-Time Stream]
     Stream --> User
@@ -287,7 +287,7 @@ graph LR
 
 - Node.js 18 or higher
 - npm, yarn, or pnpm
-- Accounts: Clerk, MongoDB Atlas, OpenAI
+- Accounts: Clerk, MongoDB Atlas, Google AI Studio
 
 ### 1) Clone & Install
 
@@ -324,8 +324,8 @@ DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/newsletter-db?r
 # Prisma Accelerate (Optional - for edge optimization)
 # DATABASE_URL=prisma://accelerate.prisma-data.net/?api_key=your_api_key
 
-# OpenAI API
-OPENAI_API_KEY=sk-proj-your_openai_api_key_here
+# Google Gemini API
+GOOGLE_GENERATIVE_AI_API_KEY=AIzaSy-your_google_api_key_here
 ```
 
 **Important Security Notes:**
@@ -333,7 +333,7 @@ OPENAI_API_KEY=sk-proj-your_openai_api_key_here
 - **NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY**: Safe to expose in client code (starts with `pk_test_` or `pk_live_`)
 - **CLERK_SECRET_KEY**: Keep secret! Never commit to git (starts with `sk_test_` or `sk_live_`)
 - **DATABASE_URL**: Your MongoDB connection string with credentials
-- **OPENAI_API_KEY**: Keep secret! Never expose publicly (starts with `sk-proj-` or `sk-`)
+- **GOOGLE_GENERATIVE_AI_API_KEY**: Keep secret! Never expose publicly (starts with `AIzaSy`)
 
 > **Tip:** The `NEXT_PUBLIC_` prefix makes variables accessible in client-side code. Only use this prefix for non-sensitive data like publishable keys and project IDs.
 
@@ -402,33 +402,30 @@ npm run prisma:studio
 - `prisma:push` - Syncs your schema with MongoDB (creates collections and indexes)
 - `prisma:studio` - Opens a visual database browser at `http://localhost:5555`
 
-### 5) Configure OpenAI
+### 5) Configure Google Gemini
 
-1. Create an OpenAI account at [OpenAI](https://openai.com)
-2. Add billing information:
-   - Go to **Billing** → **Payment methods**
-   - Add a credit card (required for API access)
-   - Set a monthly budget limit (recommended: $20-50 for development)
+1. Create a Google AI Studio account at [Google AI Studio](https://aistudio.google.com)
+2. Sign in with your Google account (free to use)
 3. Create an API key:
-   - Navigate to [API Keys](https://platform.openai.com/api-keys)
-   - Click **Create new secret key**
-   - Name it (e.g., "Newsletter Generator Dev")
-   - **Copy the key immediately** (you can't see it again!)
-   - Add to `.env.local` as `OPENAI_API_KEY`
+   - Navigate to [Get API Key](https://aistudio.google.com/apikey)
+   - Click **Create API Key** in new project (or select existing project)
+   - **Copy the key immediately** (you can see it again, but it's easier to save it now)
+   - Add to `.env.local` as `GOOGLE_GENERATIVE_AI_API_KEY`
 4. Choose your AI model:
-   - By default, this app uses **GPT-4o** (`gpt-4o` model)
-   - **The model is fully customizable** - edit `actions/generate-newsletter.ts` line 106 to use:
-     - `gpt-4o` (default) - Best quality, higher cost
-     - `gpt-4o-mini` - Faster and cheaper alternative
-     - `gpt-4-turbo` - Previous generation
-     - `gpt-3.5-turbo` - Most cost-effective option
-   - Check your account has access to your chosen model in the API settings
+   - By default, this app uses **Gemini 2.5 Pro** (`gemini-2.5-pro` model)
+   - **The model is fully customizable** - edit `app/api/newsletter/generate-stream/route.ts` line 100 and `actions/generate-newsletter.ts` line 76 to use:
+     - `gemini-2.5-pro` (default) - Best quality, advanced reasoning
+     - `gemini-1.5-pro` - High quality, excellent for long context
+     - `gemini-1.5-flash` - Faster and more cost-effective
+     - `gemini-2.0-flash-exp` - Experimental, fast model (if available)
+   - Check model availability in your region at [Google AI Studio](https://aistudio.google.com)
 
 **Cost Considerations:**
-- Newsletter generation typically costs $0.01-0.05 per newsletter with GPT-4o (depending on length)
-- GPT-4o-mini reduces costs by ~90% ($0.001-0.005 per newsletter)
-- 1,000 newsletters ≈ $10-50 (GPT-4o) or $1-5 (GPT-4o-mini)
-- Monitor usage in OpenAI Dashboard → Usage
+- Google Gemini offers generous free tier for development
+- Newsletter generation typically costs $0.001-0.01 per newsletter with Gemini 2.5 Pro (depending on length)
+- Gemini 1.5 Flash reduces costs significantly while maintaining good quality
+- 1,000 newsletters ≈ $1-10 (Gemini 2.5 Pro) or $0.10-1 (Gemini 1.5 Flash)
+- Monitor usage in Google AI Studio Dashboard → Usage & Limits
 
 ### 6) Run the Development Server
 
@@ -568,7 +565,7 @@ After deployment:
 ### 4) Monitor Your App
 
 - **Vercel Analytics**: Track page views and performance
-- **OpenAI Usage Dashboard**: Monitor API costs
+- **Google AI Studio Dashboard**: Monitor API usage and costs
 - **MongoDB Atlas Metrics**: Track database performance
 - **Clerk Dashboard**: View user signups and authentication metrics
 
@@ -657,23 +654,32 @@ npx prisma db push --force-reset
 - Check feed URL actually has articles
 - Verify date range includes article publication dates
 
-### OpenAI Generation Issues
+### Google Gemini Generation Issues
 
-**Problem:** "OpenAI API key invalid"
-- Verify key starts with `sk-proj-` or `sk-`
+**Problem:** "Google API key not configured" or "Invalid Google API key"
+- Verify key starts with `AIzaSy`
 - Check you copied the entire key (they're long!)
-- Ensure you have billing set up in OpenAI Dashboard
+- Ensure `GOOGLE_GENERATIVE_AI_API_KEY` is set in your `.env.local` file
+- Restart your dev server after adding the environment variable
+- Get your API key from [Google AI Studio](https://aistudio.google.com/apikey)
 
-**Problem:** Rate limit errors
-- OpenAI has rate limits based on your account tier
-- New accounts: 3 requests/min, 200 requests/day
-- Upgrade tier or wait for rate limit to reset
-- Check usage in OpenAI Dashboard
+**Problem:** Rate limit errors or quota exceeded
+- Google Gemini has rate limits based on your account tier
+- Free tier: Check your quota limits in Google AI Studio
+- Wait for rate limit to reset or upgrade your quota
+- Check usage in Google AI Studio Dashboard → Usage & Limits
+
+**Problem:** "Invalid model name" or model not available
+- Verify you're using a valid model name (e.g., `gemini-2.5-pro`, `gemini-1.5-pro`, `gemini-1.5-flash`)
+- Some models may not be available in all regions
+- Check model availability at [Google AI Studio](https://aistudio.google.com)
+- If `gemini-2.5-pro` is not available, try `gemini-1.5-pro` or `gemini-1.5-flash`
 
 **Problem:** Newsletter generation fails or returns gibberish
-- Verify you're using `gpt-4o` model (not `gpt-3.5-turbo`)
-- Check you have GPT-4 access in your OpenAI account
+- Verify you're using a supported Gemini model
+- Check you have access to the model in your Google AI Studio account
 - Ensure articles were fetched correctly (check database)
+- Check server logs for detailed error messages
 
 **Problem:** Streaming doesn't work
 - Check browser console for errors
@@ -696,7 +702,8 @@ npx prisma db push --force-reset
 **Problem:** "Internal Server Error" in production
 - Check Vercel Function Logs for detailed errors
 - Verify DATABASE_URL is production cluster (not localhost)
-- Check OpenAI API key is valid for production use
+- Check GOOGLE_GENERATIVE_AI_API_KEY is set in Vercel environment variables
+- Ensure the API key is valid for production use
 
 ## 🏆 Take It Further - Challenge Time!
 
